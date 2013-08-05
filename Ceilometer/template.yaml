@@ -4,10 +4,8 @@ Description: |
 Parameters:
   KeyName:
     Type: String
-    Default: heat_key
   InstanceType:
     Type: String
-    Default: m1.micro
   ImageId:
     Type: String
   StackStart:
@@ -16,9 +14,7 @@ Parameters:
   ConsumeStopSeconds:
     Description: Seconds after StackStart when memory should be released
     Type: Number
-    Default: '360'
 Resources:
-  Recorder: {Type: 'OS::Heat::EventRecorder'}
   SmokeSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -51,7 +47,7 @@ Resources:
       AutoScalingGroupName: {Ref: ServerGroup}
       Cooldown: '60'
       ScalingAdjustment: '-1'
-  MEMAlarmHigh:
+  CPUAlarmHigh:
     Type: OS::Metering::Alarm
     Properties:
       description: Scale-up if the average CPU > 50% for 1 minute
@@ -59,14 +55,9 @@ Resources:
       statistic: avg
       period: '60'
       evaluation_periods: '1'
-      threshold: '50'
+      threshold: '60'
       alarm_actions:
       - {"Fn::GetAtt": [ServerScaleUpPolicy, AlarmUrl]}
-        {'Fn::GetAtt': ['Recorder', 'AlarmUrl']}
-      insufficient_data_actions:
-      - {'Fn::GetAtt': ['Recorder', 'AlarmUrl']}
-      ok_actions:
-        {'Fn::GetAtt': ['Recorder', 'AlarmUrl']}
       matching_metadata: {'metadata.user_metadata.server_group': 'ServerGroup'}
       comparison_operator: gt
   CPUAlarmLow:
@@ -77,15 +68,10 @@ Resources:
       statistic: avg
       period: '60'
       evaluation_periods: '1'
-      threshold: '15'
+      threshold: '20'
       alarm_actions:
-      - {"Fn::GetAtt": [WebServerScaleDownPolicy, AlarmUrl]}
-        {'Fn::GetAtt': ['Recorder', 'AlarmUrl']}
-      insufficient_data_actions:
-      - {'Fn::GetAtt': ['Recorder', 'AlarmUrl']}
-      ok_actions:
-        {'Fn::GetAtt': ['Recorder', 'AlarmUrl']}
-      matching_metadata: {'metadata.user_metadata.server_group': 'WebServerGroup'}
+      - {"Fn::GetAtt": [ServerScaleDownPolicy, AlarmUrl]}
+      matching_metadata: {'metadata.user_metadata.server_group': 'ServerGroup'}
       comparison_operator: lt
   LaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
@@ -100,12 +86,10 @@ Resources:
                   ConsumeStopSeconds: {Ref: ConsumeStopSeconds}
                 - |
                   #!/usr/bin/env python
-                  import psutil
+                  from subprocess import call
                   import time
-                  import datetime
-                  a = []
                   while time.time() < StackStart + ConsumeStopSeconds:
-                      timeout 8 cat /dev/zero > /dev/null
+                      call(["timeout", "8", "cat /dev/zero > /dev/null"])
               mode: '000700'
               owner: root
               group: root
@@ -117,12 +101,15 @@ Resources:
       UserData:
         Fn::Base64:
           Fn::Replace:
-          - {ConsumeStopSeconds: {Ref: ConsumeStopSeconds}}
+          - 'AWS::StackName': {Ref: 'AWS::StackName'}
+            'AWS::Region': {Ref: 'AWS::Region'}
           - |
             #!/bin/bash -v
-            rm /etc/localtime
-            ln -s /usr/share/zoneinfo/Australia/Melbourne /etc/localtime
-            /opt/aws/bin/cfn-init
+            /opt/aws/bin/cfn-init -s AWS::StackName -r LaunchConfig --region AWS::Region
+            # yum make-cache gobbles up the whole of root.
+            rm -rf /var/cache/yum/
+            # report on memory consumption every 4 seconds
+            at -f /root/watch_loop now
             # ramp up memory consumption until it is over 70%
             # then exits ConsumeStopSeconds seconds after stack launch
             /root/consume_memory &
