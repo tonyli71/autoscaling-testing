@@ -48,7 +48,7 @@ Resources:
       Cooldown: '60'
       ScalingAdjustment: '-1'
   CPUAlarmHigh:
-    Type: OS::Metering::Alarm
+    Type: OS::Ceilometer::Alarm
     Properties:
       description: Scale-up if the average CPU > 50% for 1 minute
       counter_name: cpu_util
@@ -109,7 +109,7 @@ Resources:
             # yum make-cache gobbles up the whole of root.
             rm -rf /var/cache/yum/
             # report on memory consumption every 4 seconds
-            at -f /root/watch_loop now
+            at -q b -f /root/watch_loop now
             # ramp up memory consumption until it is over 70%
             # then exits ConsumeStopSeconds seconds after stack launch
             /root/consume_memory &

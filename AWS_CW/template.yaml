@@ -45,11 +45,11 @@ Resources:
       AutoScalingGroupName: {Ref: ServerGroup}
       Cooldown: '60'
       ScalingAdjustment: '-1'
-  MEMAlarmHigh:
+  CPUAlarmHigh:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmDescription: Scale-up if MEM > 70% for 10 seconds
-      MetricName: MemoryUtilization
+      AlarmDescription: Scale-up if the average CPU > 50% for 1 minute
+      MetricName: cpu_util
       Namespace: AWS/ES2
       Statistic: Average
       Period: '10'
@@ -61,11 +61,11 @@ Resources:
       - Name: AutoScalingGroupName
         Value: {Ref: ServerGroup}
       ComparisonOperator: GreaterThanThreshold
-  MEMAlarmLow:
+  CPUAlarmLow:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmDescription: Scale-down if MEM < 55% for 10 seconds
-      MetricName: MemoryUtilization
+      AlarmDescription: Scale-down if the average CPU < 15% for 1 minute
+      MetricName: cpu_util
       Namespace: AWS/EC2
       Statistic: Average
       Period: '10'

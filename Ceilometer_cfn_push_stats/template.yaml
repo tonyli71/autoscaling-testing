@@ -66,7 +66,7 @@ Resources:
       threshold: '50'
       alarm_actions:
       - {"Fn::GetAtt": [ServerScaleUpPolicy, AlarmUrl]}
-      matching_metadata: {'metadata.user_metadata.server_group': 'ServerGroup'}
+      matching_metadata: {'metadata.metering.server_group': 'ServerGroup'}
       comparison_operator: gt
   CPUAlarmLow:
     Type: OS::Metering::Alarm
@@ -79,7 +79,7 @@ Resources:
       threshold: '15'
       alarm_actions:
       - {"Fn::GetAtt": [ServerScaleDownPolicy, AlarmUrl]}
-      matching_metadata: {'metadata.user_metadata.server_group': 'WebServerGroup'}
+      matching_metadata: {'metadata.metering.server_group': 'WebServerGroup'}
       comparison_operator: lt
   LaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
