@@ -59,7 +59,7 @@ Resources:
     Type: OS::Metering::Alarm
     Properties:
       description: Scale-up if the average CPU > 50% for 1 minute
-      counter_name: cpu_util
+      meter_name: cpu_util
       statistic: avg
       period: '60'
       evaluation_periods: '1'
@@ -72,7 +72,7 @@ Resources:
     Type: OS::Metering::Alarm
     Properties:
       description: Scale-down if the average CPU < 15% for 1 minute
-      counter_name: cpu_util
+      meter_name: cpu_util
       statistic: avg
       period: '60'
       evaluation_periods: '1'
