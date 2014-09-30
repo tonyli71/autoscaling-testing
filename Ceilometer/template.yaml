@@ -61,7 +61,7 @@ Resources:
       matching_metadata: {'metadata.user_metadata.server_group': 'ServerGroup'}
       comparison_operator: gt
   CPUAlarmLow:
-    Type: OS::Metering::Alarm
+    Type: OS::Ceilometer::Alarm
     Properties:
       description: Scale-down if the average CPU < 15% for 1 minute
       meter_name: cpu_util

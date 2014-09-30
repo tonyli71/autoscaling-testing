@@ -55,8 +55,8 @@ Resources:
       AutoScalingGroupName: {Ref: ServerGroup}
       Cooldown: '60'
       ScalingAdjustment: '-1'
-  MEMAlarmHigh:
-    Type: OS::Metering::Alarm
+  CPUAlarmHigh:
+    Type: OS::Ceilometer::Alarm
     Properties:
       description: Scale-up if the average CPU > 50% for 1 minute
       meter_name: cpu_util
@@ -69,7 +69,7 @@ Resources:
       matching_metadata: {'metadata.metering.server_group': 'ServerGroup'}
       comparison_operator: gt
   CPUAlarmLow:
-    Type: OS::Metering::Alarm
+    Type: OS::Ceilometer::Alarm
     Properties:
       description: Scale-down if the average CPU < 15% for 1 minute
       meter_name: cpu_util
