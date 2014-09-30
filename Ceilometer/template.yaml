@@ -31,8 +31,6 @@ Resources:
       LaunchConfigurationName: {Ref: LaunchConfig}
       MinSize: '1'
       MaxSize: '3'
-      Tags:
-      - {Key: metering.server_group, Value: ServerGroup}
   ServerScaleUpPolicy:
     Type: AWS::AutoScaling::ScalingPolicy
     Properties:
@@ -58,7 +56,7 @@ Resources:
       threshold: '60'
       alarm_actions:
       - {"Fn::GetAtt": [ServerScaleUpPolicy, AlarmUrl]}
-      matching_metadata: {'metadata.user_metadata.server_group': 'ServerGroup'}
+      matching_metadata: {'metadata.user_metadata.AutoScalingGroupName': {Ref: ServerGroup}}
       comparison_operator: gt
   CPUAlarmLow:
     Type: OS::Ceilometer::Alarm
@@ -71,7 +69,7 @@ Resources:
       threshold: '20'
       alarm_actions:
       - {"Fn::GetAtt": [ServerScaleDownPolicy, AlarmUrl]}
-      matching_metadata: {'metadata.user_metadata.server_group': 'ServerGroup'}
+      matching_metadata: {'metadata.user_metadata.AutoScalingGroupName': {Ref: ServerGroup}}
       comparison_operator: lt
   LaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
